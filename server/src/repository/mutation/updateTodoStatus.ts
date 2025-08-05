@@ -4,52 +4,85 @@ import { type Result, err, ok } from 'neverthrow'
 import type { EnvironmentVariables } from '../../env'
 import { todos } from '../../schema'
 
-/**
- * Todo完了状態更新のパラメータ。
- */
-export type UpdateTodoStatusParams = {
-  /**
-   * ユーザーID。権限境界パラメータ。
-   */
+/** Todoのステータスを更新する際のパラメータ。 */
+type RepositoryParams = {
   userId: string
-  /**
-   * TodoのID。
-   */
   todoId: string
-  /**
-   * 完了状態。
-   */
   isCompleted: boolean
 }
 
+/** Todoのステータスを更新した結果。 */
+type RepositoryResult = {
+  todoId: string
+  userId: string
+  title: string
+  description: string | null
+  isCompleted: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 /**
- * Todoの完了状態を更新する。
+ * Todoのステータスを更新する。
+ * @param params - 更新パラメータ。
+ * @returns 更新したTodo情報。
  */
 export const updateTodoStatus = async (
-  params: UpdateTodoStatusParams,
-): Promise<Result<typeof todos.$inferSelect, Error>> => {
+  params: RepositoryParams,
+): Promise<Result<RepositoryResult, Error>> => {
   const c = getContext<EnvironmentVariables>()
   const db = c.var.db
   const logger = c.get('logger')
 
   try {
+    // 更新データを準備する。
     const now = new Date()
-
-    const result = await db
+    
+    // Todoを更新する。
+    await db
       .update(todos)
-      .set({ 
+      .set({
         isCompleted: params.isCompleted,
         updatedAt: now.toISOString(),
       })
-      .where(and(eq(todos.todoId, params.todoId), eq(todos.userId, params.userId)))
-      .returning()
+      .where(
+        and(
+          eq(todos.userId, params.userId),  // 権限制御
+          eq(todos.todoId, params.todoId),
+        ),
+      )
 
-    const updatedTodo = result[0]
+    // 更新後のTodo情報を取得する。
+    const updatedTodo = await db
+      .select({
+        todoId: todos.todoId,
+        userId: todos.userId,
+        title: todos.title,
+        description: todos.description,
+        isCompleted: todos.isCompleted,
+        createdAt: todos.createdAt,
+        updatedAt: todos.updatedAt,
+      })
+      .from(todos)
+      .where(
+        and(
+          eq(todos.userId, params.userId),  // 権限制御
+          eq(todos.todoId, params.todoId),
+        ),
+      )
+      .get()
+
+    // 結果がない場合はエラーを返す。
     if (!updatedTodo) {
-      return err(new Error('Todoが見つかりませんでした'))
+      return err(new Error(`Todoの更新に失敗しました: ${params.todoId}`))
     }
 
-    return ok(updatedTodo)
+    // 更新したTodo情報を返す。
+    return ok({
+      ...updatedTodo,
+      createdAt: updatedTodo.createdAt,
+      updatedAt: updatedTodo.updatedAt,
+    })
   } catch (e) {
     if (e instanceof Error) {
       logger.error(`Repository Error: ${e}`, e)

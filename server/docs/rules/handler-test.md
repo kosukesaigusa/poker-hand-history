@@ -10,7 +10,7 @@ alwaysApply: false
 ## 1. テストの実行方法
 
 ```sh
-bun run test:run
+bun run test:ci
 ```
 
 で watch せずに一度だけ実行します。

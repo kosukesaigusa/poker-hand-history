@@ -7,8 +7,10 @@ import { match } from 'ts-pattern'
 import type { EnvironmentVariables } from '../../../env'
 import { updateTodoStatusUseCase } from '../../../use-case/updateTodoStatusUseCase'
 import { ERROR_CODES } from '../../errorCode'
-import { AppHTTPException, getErrorResponseForOpenAPISpec } from '../../errorResponse'
-import { ENDPOINT_DEVELOPMENT_STATUS } from '../util/developmentStatus'
+import {
+  AppHTTPException,
+  getErrorResponseForOpenAPISpec,
+} from '../../errorResponse'
 
 /** リクエストボディのスキーマ。 */
 const requestSchema = z
@@ -49,28 +51,28 @@ const responseSchema = z
     example: {
       todo: {
         todoId: '01HF2K3M4N5P6Q7R8S9T0U1V2W',
-        userId: 'user123',
+        userId: '01HF2K3M4N5P6Q7R8S9T0U1V2W',
         title: '買い物リストを作成する',
         description: '今週の食材を購入するためのリストを作成',
         isCompleted: true,
-        createdAt: '2024-01-01T00:00:00.000Z',
-        updatedAt: '2024-01-01T12:00:00.000Z',
+        createdAt: '2023-01-01T00:00:00.000Z',
+        updatedAt: '2023-01-01T00:00:00.000Z',
       },
     },
   })
 
 /**
- * Todoの完了状態を更新するハンドラー。
- * @returns 更新されたTodo情報を返却する。
+ * Todo のステータスを更新する Handler.
+ * 
+ * @returns 更新された Todo 情報を返却する。
  */
 export const updateTodoStatusHandlers = createFactory<EnvironmentVariables>().createHandlers(
   describeRoute({
     tags: ['todos'],
-    summary: 'Todoの完了状態を更新する',
-    description: ENDPOINT_DEVELOPMENT_STATUS.IMPLEMENTED.displayText,
+    summary: 'Todo のステータスを更新する',
     responses: {
       200: {
-        description: 'Todoの完了状態の更新に成功',
+        description: 'Todo のステータス更新に成功',
         content: {
           'application/json': {
             schema: resolver(responseSchema),
@@ -83,40 +85,45 @@ export const updateTodoStatusHandlers = createFactory<EnvironmentVariables>().cr
   validator('param', paramsSchema),
   validator('json', requestSchema),
   async (c) => {
-    // 認証済みユーザーIDを取得する。
+    // 認証ミドルウェアで設定された userId を Context から取得する。
     const userId = c.get('userId')
+    // その他のパラメータはバリデーション済みのリクエストパラメータから取得する。
+    const { todoId } = c.req.valid('param')
 
-    // バリデーション済みのパスパラメータとリクエストボディを取得する。
-    const params = c.req.valid('param')
+    // バリデーション済みのリクエストボディを取得する。
     const data = c.req.valid('json')
-
-    // UseCaseを呼び出す。
+    
+    // UseCase を呼び出す。
     const result = await updateTodoStatusUseCase({
       userId,
-      todoId: params.todoId,
+      todoId,
       isCompleted: data.isCompleted,
     })
-
+    
     // エラーが発生した場合は、エラーの種類を網羅的にマッチングし、
-    // 対応するエラーコードAppHTTPExceptionに設定してスローする。
+    // 対応するエラーコード AppHTTPException に設定してスローする。
     if (result.isErr()) {
       const error = result.error
       match(error)
-        .with({ type: 'UPDATE_ERROR' }, () => {
+        .with({ type: 'TODO_UPDATE_ERROR' }, () => {
+          throw new AppHTTPException(ERROR_CODES.PATCH_TODO_STATUS.UPDATE_ERROR.code)
+        })
+        .with({ type: 'TODO_NOT_FOUND' }, () => {
           throw new AppHTTPException(ERROR_CODES.PATCH_TODO_STATUS.UPDATE_ERROR.code)
         })
         .exhaustive()
       return
     }
 
-    // レスポンスデータを生成する。
+    // レスポンスデータを作成する。
     const responseData = {
       todo: result.value,
     }
-
+    
     // レスポンスデータをバリデーションする。
     const validatedResponse = responseSchema.parse(responseData)
 
+    // レスポンスを生成する。
     return c.json(validatedResponse)
-  }
+  },
 )

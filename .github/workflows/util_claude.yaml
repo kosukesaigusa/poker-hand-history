@@ -46,7 +46,7 @@ jobs:
           timeout_minutes: "60"
           allowed_tools: |
             Bash(bun run check)
-            Bash(bun run test:run)
+            Bash(bun run test:ci)
           # mode: tag  # Default: responds to @claude mentions
           # Optional: Restrict network access to specific domains only
           experimental_allowed_domains: |

@@ -13,7 +13,7 @@ export const DEFAULT_USER_IDS = {
   USER_1: 'user-1',
   USER_2: 'user-2',
   USER_3: 'user-3',
-  
+
   // 削除されたユーザー
   DELETED_USER: 'deleted-user-1',
 }

@@ -8,7 +8,7 @@
     "dev:remote": "wrangler dev --env dev --remote",
     "dev:prod": "wrangler dev --env prod",
     "test": "vitest",
-    "test:run": "vitest run",
+    "test:ci": "vitest run",
     "coverage": "vitest run --coverage",
     "test:ui": "vitest --ui --coverage.enabled=true",
     "deploy:dev": "wrangler deploy --env dev",

@@ -1,0 +1,34 @@
+{
+  "env": {
+    "CLAUDE_LANGUAGE": "ja"
+  },
+  "permissions": {},
+  "hooks": {
+    "Notification": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"確認待ち\" with title \"Claude Code\"' && afplay /System/Library/Sounds/Ping.aiff"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"タスク完了\" with title \"Claude Code\"' && afplay /System/Library/Sounds/Ping.aiff"
+          },
+          {
+            "type": "command",
+            "command": "bun run check"
+          }
+        ]
+      }
+    ]
+  }
+}

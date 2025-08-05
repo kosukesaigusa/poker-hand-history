@@ -1,38 +1,162 @@
 import { describe, expect, it } from 'vitest'
-import { seedAllData } from '../../../seed'
-import { createApp } from '../../../util/factory'
-import { getMiniflareBindings } from '../../../util/test-util/getMiniflareBindings'
+import { ERROR_CODES } from '../../errorCode'
+import { DEFAULT_USER_IDS } from '../../../util/seed/data/userIds'
+import { mockSetUserAuthMiddleware } from '../../../util/test-util/mockSetUserAuthMiddleware'
+import { getTestClient } from '../../../util/test-util/testClient'
+import type { ZodValidationErrorResponse } from '../../../util/test-util/zodValidationErrorResponse'
 
-describe('GET /api/todos', () => {
-  it('認証済みユーザーのTodo一覧を取得できる', async () => {
-    const app = createApp()
-    const env = getMiniflareBindings()
+describe('Test for GET /api/todos', () => {
+  // 前提：認証済みユーザーがTodo一覧を取得する。
+  // 期待値：ステータスコード 200 とTodo一覧が返される。
+  it('Successfully request GET /api/todos', async () => {
+    // ユーザー情報をセットする。
+    mockSetUserAuthMiddleware({ userId: DEFAULT_USER_IDS.USER_1 })
 
-    // シードデータを投入
-    await seedAllData(env.DB)
+    // テスト用の API クライアントを作成する。
+    const client = await getTestClient()
 
-    const response = await app.request(
-      '/api/todos',
-      {
-        headers: {
-          Authorization: 'Bearer test-firebase-token',
+    // リクエストを送信する。
+    const res = await client.api.todos.$get()
+
+    // ステータスコードを検証する。
+    expect(res.status).toBe(200)
+
+    // レスポンスデータを検証する。
+    const data = await res.json()
+    expect(data).toStrictEqual({
+      todos: [
+        {
+          todoId: expect.any(String),
+          userId: DEFAULT_USER_IDS.USER_1,
+          title: expect.any(String),
+          description: expect.any(String),
+          isCompleted: expect.any(Boolean),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
         },
-      },
-      env,
-    )
-
-    expect(response.status).toBe(200)
-    const data = await response.json()
-    expect(data).toHaveProperty('todos')
-    expect(Array.isArray(data.todos)).toBe(true)
+        {
+          todoId: expect.any(String),
+          userId: DEFAULT_USER_IDS.USER_1,
+          title: expect.any(String),
+          description: expect.any(String),
+          isCompleted: expect.any(Boolean),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        },
+        {
+          todoId: expect.any(String),
+          userId: DEFAULT_USER_IDS.USER_1,
+          title: expect.any(String),
+          description: expect.any(String),
+          isCompleted: expect.any(Boolean),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        },
+      ],
+    })
   })
 
-  it('認証なしでアクセスすると401エラーになる', async () => {
-    const app = createApp()
-    const env = getMiniflareBindings()
+  // 前提：認証済みユーザーが存在しないTodoを取得する。
+  // 期待値：ステータスコード 200 と空のTodo一覧が返される。
+  it('Successfully request GET /api/todos when user has no todos', async () => {
+    // ユーザー情報をセットする。
+    mockSetUserAuthMiddleware({ userId: DEFAULT_USER_IDS.DELETED_USER })
 
-    const response = await app.request('/api/todos', {}, env)
+    // テスト用の API クライアントを作成する。
+    const client = await getTestClient()
 
-    expect(response.status).toBe(401)
+    // リクエストを送信する。
+    const res = await client.api.todos.$get()
+
+    // ステータスコードを検証する。
+    expect(res.status).toBe(200)
+
+    // レスポンスデータを検証する。
+    const data = await res.json()
+    expect(data).toStrictEqual({
+      todos: [
+        {
+          todoId: expect.any(String),
+          userId: DEFAULT_USER_IDS.DELETED_USER,
+          title: expect.any(String),
+          description: expect.any(String),
+          isCompleted: expect.any(Boolean),
+          createdAt: expect.any(String),
+          updatedAt: expect.any(String),
+        },
+      ],
+    })
+  })
+
+  // 前提：未認証ユーザーがTodo一覧を取得する。
+  // 期待値：ステータスコード 400 とエラーコード middleware.auth.1 が返される。
+  it('Returns 400 with error code middleware.auth.1 when user authentication fails', async () => {
+    // ユーザー情報をセットする。
+    mockSetUserAuthMiddleware({ userId: undefined })
+
+    // テスト用の API クライアントを作成する。
+    const client = await getTestClient()
+
+    // リクエストを送信する。
+    const res = await client.api.todos.$get()
+
+    // ステータスコードを検証する。
+    expect(res.status).toBe(400)
+
+    // エラーレスポンスを検証する。
+    const error = await res.json()
+    expect(error).toEqual({
+      error: {
+        code: 'middleware.auth.1',
+      },
+    })
+  })
+
+  // 前提：認証に失敗したユーザーがTodo一覧を取得する。
+  // 期待値：ステータスコード 400 とエラーコード middleware.auth.1 が返される。
+  it('Returns 400 with error code middleware.auth.1 when firebase auth fails', async () => {
+    // ユーザー情報をセットする。
+    mockSetUserAuthMiddleware({ shouldFailAuth: true })
+
+    // テスト用の API クライアントを作成する。
+    const client = await getTestClient()
+
+    // リクエストを送信する。
+    const res = await client.api.todos.$get()
+
+    // ステータスコードを検証する。
+    expect(res.status).toBe(400)
+
+    // エラーレスポンスを検証する。
+    const error = await res.json()
+    expect(error).toEqual({
+      error: {
+        code: 'middleware.auth.1',
+      },
+    })
+  })
+
+  // 前提：IDトークンの取得に失敗したユーザーがTodo一覧を取得する。
+  // 期待値：ステータスコード 400 とエラーコード middleware.auth.1 が返される。
+  it('Returns 400 with error code middleware.auth.1 when id token retrieval fails', async () => {
+    // ユーザー情報をセットする。
+    mockSetUserAuthMiddleware({ shouldFailIdToken: true })
+
+    // テスト用の API クライアントを作成する。
+    const client = await getTestClient()
+
+    // リクエストを送信する。
+    const res = await client.api.todos.$get()
+
+    // ステータスコードを検証する。
+    expect(res.status).toBe(400)
+
+    // エラーレスポンスを検証する。
+    const error = await res.json()
+    expect(error).toEqual({
+      error: {
+        code: 'middleware.auth.1',
+      },
+    })
   })
 })

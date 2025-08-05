@@ -1,32 +1,55 @@
 import { type Result, err, ok } from 'neverthrow'
-import { type GetTodosParams, getTodos } from '../repository/query/getTodos'
-import type { todos } from '../schema'
+import { getTodos } from '../repository/query/getTodos'
 
 /** UseCase で発生するエラー型の定義。 */
 type UseCaseError = {
-  type: 'FETCH_ERROR'
+  type: 'TODO_FETCH_ERROR'
   message: 'Todo一覧の取得に失敗しました'
 }
 
-/**
- * Todo一覧取得UseCaseのパラメータ。
- */
-export type GetTodosUseCaseParams = GetTodosParams
+/** UseCase のパラメータ型の定義。 */
+type UseCaseParams = {
+  userId: string
+}
+
+/** UseCase の戻り値の型の定義。 */
+type UseCaseResult = {
+  todoId: string
+  userId: string
+  title: string
+  description: string | null
+  isCompleted: boolean
+  createdAt: string
+  updatedAt: string
+}[]
 
 /**
- * Todo一覧取得UseCase。
+ * Todo一覧を取得する。
+ * @param params - パラメータ。
+ * @returns Todo一覧。
  */
-export const getTodosUseCase = async (
-  params: GetTodosUseCaseParams,
-): Promise<Result<(typeof todos.$inferSelect)[], UseCaseError>> => {
+export const fetchTodosUseCase = async (
+  params: UseCaseParams,
+): Promise<Result<UseCaseResult, UseCaseError>> => {
+  // Todo一覧を取得する。
   const result = await getTodos(params)
-  
+
   if (result.isErr()) {
     return err({
-      type: 'FETCH_ERROR' as const,
+      type: 'TODO_FETCH_ERROR' as const,
       message: 'Todo一覧の取得に失敗しました' as const,
     })
   }
-  
-  return ok(result.value)
+
+  return ok(
+    result.value.map((todo) => ({
+      todoId: todo.todoId,
+      userId: todo.userId,
+      title: todo.title,
+      description: todo.description,
+      isCompleted: todo.isCompleted,
+      createdAt: todo.createdAt,
+      updatedAt: todo.updatedAt,
+    })),
+  )
 }

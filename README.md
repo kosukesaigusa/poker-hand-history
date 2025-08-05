@@ -69,7 +69,7 @@ Open API ドキュメントを確認するためには、上記で立ち上が�
 
 ```sh
 # watch する必要がない場合:
-bun run test:run
+bun run test:ci
 
 # watch する場合:
 bun run test
