@@ -4,6 +4,9 @@ on:
   # プルリクエストが作成または更新された時に実行する。
   pull_request:
     types: [opened, synchronize]
+    paths:
+      - 'server/**'
+      - '.github/workflows/ci_test.yaml'
 
 jobs:
   test:
@@ -19,8 +22,10 @@ jobs:
         with:
           bun-version: 'latest'
           cache-key-prefix: 'bun-dependencies'
+          working-directory: 'server'
         
       # テストを実行する。
       # vitest を使用してテストを実行し、結果を確認する。
       - name: Run tests
+        working-directory: server
         run: bun run test:run

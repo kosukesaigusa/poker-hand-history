@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'server/**'
+      - '.github/workflows/ci_deploy_to_dev.yaml'
 
 jobs:
   deploy:
@@ -19,6 +22,7 @@ jobs:
         with:
           bun-version: 'latest'
           cache-key-prefix: 'bun-dependencies'
+          working-directory: 'server'
 
       # dev 環境の Cloudflare Worker にデプロイする。
       - name: Deploy to dev
@@ -30,3 +34,4 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           # 実行する wrangler コマンド。'dev' 環境を指定してデプロイする。
           command: deploy --env dev
+          workingDirectory: 'server'

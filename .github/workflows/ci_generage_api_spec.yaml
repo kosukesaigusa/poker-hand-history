@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'server/**'
+      - '.github/workflows/ci_generage_api_spec.yaml'
 
 jobs:
   generate-api-spec:
@@ -19,14 +22,16 @@ jobs:
         with:
           bun-version: 'latest'
           cache-key-prefix: 'bun-lint-dependencies'
+          working-directory: 'server'
         
       # サーバーを起動し、OpenAPI 仕様を生成する。
       - name: Start server and generate OpenAPI spec
+        working-directory: server
         run: |
           bun run dev &
           # サーバーの起動を待つ。
           sleep 5
-          curl http://localhost:8787/development/spec | jq '.' > openapi.json
+          curl http://localhost:8787/development/spec | jq '.' > ../openapi.json
           
       # OpenAPI 仕様をリポジトリに保存する。
       - name: Upload API spec
