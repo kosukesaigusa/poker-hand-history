@@ -4,7 +4,7 @@
   "compatibility_date": "2024-09-23",
   "main": "src/index.ts",
   "compatibility_flags": ["nodejs_compat"],
-  "account_id": "9a3e9be19443f3e69e9f69529912446c",
+  "account_id": "4f29a10957e4205c8c867e6b0f4fc924",
   "observability": {
     "enabled": true,
     "head_sampling_rate": 1
@@ -23,8 +23,8 @@
       "kv_namespaces": [
         {
           "binding": "PUBLIC_JWK_CACHE_KV",
-          "id": "b6f1ca6bcf0647ff971b052c7de0bbf4",
-          "preview_id": "72db6fd2c03f4cb1a43ace4432472043"
+          "id": "5e62667a4bf24765a011e7e85177e691",
+          "preview_id": "4dde7580915f4028bda0d74036abed76"
         }
       ],
       // D1 の設定（開発環境）。
@@ -32,7 +32,7 @@
         {
           "binding": "DB",
           "database_name": "poker-hand-history-server-dev",
-          "database_id": "6dd2f80f-7830-4f1e-9305-5de434bdcd1a",
+          "database_id": "c746c306-871a-42cc-9264-845119130256",
           "migrations_dir": "drizzle/migrations"
         }
       ]
@@ -50,8 +50,8 @@
       "kv_namespaces": [
         {
           "binding": "PUBLIC_JWK_CACHE_KV",
-          "id": "b6f1ca6bcf0647ff971b052c7de0bbf4",
-          "preview_id": "72db6fd2c03f4cb1a43ace4432472043"
+          "id": "5e62667a4bf24765a011e7e85177e691",
+          "preview_id": "4dde7580915f4028bda0d74036abed76"
         }
       ],
       // D1 の設定（本番環境）。
@@ -59,7 +59,7 @@
         {
           "binding": "DB",
           "database_name": "poker-hand-history-db",
-          "database_id": "8a887647-f39a-4e64-960f-1b691ebde9f3",
+          "database_id": "0cc0816f-3bb8-438b-b963-23367260ef38",
           "migrations_dir": "drizzle/migrations"
         }
       ]
