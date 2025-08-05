@@ -10,6 +10,10 @@ inputs:
     description: 'Prefix for the cache key'
     required: false
     default: 'bun-dependencies'
+  working-directory:
+    description: 'Working directory for the commands'
+    required: false
+    default: '.'
 
 runs:
   using: 'composite'
@@ -25,8 +29,8 @@ runs:
       uses: actions/cache@v4
       id: bun-cache
       with:
-        path: node_modules
-        key: ${{ inputs.cache-key-prefix }}-${{ runner.os }}-${{ hashFiles('**/package.json', '**/bun.lock') }}
+        path: ${{ inputs.working-directory }}/node_modules
+        key: ${{ inputs.cache-key-prefix }}-${{ runner.os }}-${{ hashFiles(format('{0}/**/package.json', inputs.working-directory), format('{0}/**/bun.lock', inputs.working-directory)) }}
         restore-keys: |
           ${{ inputs.cache-key-prefix }}-${{ runner.os }}-
     
@@ -34,4 +38,5 @@ runs:
     - name: Install dependencies
       if: steps.bun-cache.outputs.cache-hit != 'true'
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: bun install

@@ -4,6 +4,9 @@ on:
   # プルリクエストが作成または更新された時に実行する。
   pull_request:
     types: [opened, synchronize]
+    paths:
+      - 'server/**'
+      - '.github/workflows/ci_lint.yaml'
 
 jobs:
   lint:
@@ -19,8 +22,10 @@ jobs:
         with:
           bun-version: 'latest'
           cache-key-prefix: 'bun-dependencies'
+          working-directory: 'server'
         
       # リントチェックを実行する。
       # biome を使用してコードの品質チェックを行い、問題があれば修正する。
       - name: Run biome check
+        working-directory: server
         run: bun run check
