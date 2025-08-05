@@ -1,0 +1,37 @@
+name: 'Setup Bun and Dependencies'
+description: 'Setup Bun environment and install dependencies with caching'
+
+inputs:
+  bun-version:
+    description: 'Bun version to use'
+    required: false
+    default: 'latest'
+  cache-key-prefix:
+    description: 'Prefix for the cache key'
+    required: false
+    default: 'bun-dependencies'
+
+runs:
+  using: 'composite'
+  steps:
+    # Bun 環境をセットアップする。
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v2
+      with:
+        bun-version: ${{ inputs.bun-version }}
+    
+    # package.json に基づいて依存関係をキャッシュする。
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      id: bun-cache
+      with:
+        path: node_modules
+        key: ${{ inputs.cache-key-prefix }}-${{ runner.os }}-${{ hashFiles('**/package.json', '**/bun.lock') }}
+        restore-keys: |
+          ${{ inputs.cache-key-prefix }}-${{ runner.os }}-
+    
+    # キャッシュがない場合のみ依存関係をインストールする。
+    - name: Install dependencies
+      if: steps.bun-cache.outputs.cache-hit != 'true'
+      shell: bash
+      run: bun install

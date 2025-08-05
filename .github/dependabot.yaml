@@ -1,0 +1,8 @@
+version: 2
+enable-beta-ecosystems: true
+updates:
+  # GitHub Actions の更新設定。
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

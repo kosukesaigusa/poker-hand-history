@@ -1,0 +1,68 @@
+{
+  // 共通設定。
+  "name": "poker-hand-history-server",
+  "compatibility_date": "2024-09-23",
+  "main": "src/index.ts",
+  "compatibility_flags": ["nodejs_compat"],
+  "account_id": "9a3e9be19443f3e69e9f69529912446c",
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  },
+  // 開発環境の設定。
+  "env": {
+    "dev": {
+      "name": "poker-hand-history-server-dev",
+      // 開発環境の環境変数一覧。
+      "vars": {
+        "ENV_TYPE": "development",
+        "FIREBASE_PROJECT_ID": "poker-hand-history-develop",
+        "PUBLIC_JWK_CACHE_KEY": "public-jwk-cache-key-dev"
+      },
+      // KV の設定（開発環境）。
+      "kv_namespaces": [
+        {
+          "binding": "PUBLIC_JWK_CACHE_KV",
+          "id": "b6f1ca6bcf0647ff971b052c7de0bbf4",
+          "preview_id": "72db6fd2c03f4cb1a43ace4432472043"
+        }
+      ],
+      // D1 の設定（開発環境）。
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "poker-hand-history-server-dev",
+          "database_id": "6dd2f80f-7830-4f1e-9305-5de434bdcd1a",
+          "migrations_dir": "drizzle/migrations"
+        }
+      ]
+    },
+    // 本番環境の設定。
+    "prod": {
+      "name": "poker-hand-history-server",
+      // 本番環境の環境変数一覧。
+      "vars": {
+        "ENV_TYPE": "production",
+        "FIREBASE_PROJECT_ID": "poker-hand-history-prod",
+        "PUBLIC_JWK_CACHE_KEY": "public-jwk-cache-key"
+      },
+      // KV の設定（本番環境）。
+      "kv_namespaces": [
+        {
+          "binding": "PUBLIC_JWK_CACHE_KV",
+          "id": "b6f1ca6bcf0647ff971b052c7de0bbf4",
+          "preview_id": "72db6fd2c03f4cb1a43ace4432472043"
+        }
+      ],
+      // D1 の設定（本番環境）。
+      "d1_databases": [
+        {
+          "binding": "DB",
+          "database_name": "poker-hand-history-db",
+          "database_id": "8a887647-f39a-4e64-960f-1b691ebde9f3",
+          "migrations_dir": "drizzle/migrations"
+        }
+      ]
+    }
+  }
+}

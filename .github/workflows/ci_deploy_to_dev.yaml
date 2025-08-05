@@ -1,0 +1,32 @@
+name: '[CI] Deploy to dev'
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # リポジトリのコードをチェックアウトする。
+      - uses: actions/checkout@v4
+
+      # Bun 環境をセットアップし、依存関係をインストールする。
+      # 作成した Composite Action を使用して、Bun のセットアップと依存関係のインストールを行う。
+      - name: Setup Bun and install dependencies
+        uses: ./.github/actions/setup-bun
+        with:
+          bun-version: 'latest'
+          cache-key-prefix: 'bun-dependencies'
+
+      # dev 環境の Cloudflare Worker にデプロイする。
+      - name: Deploy to dev
+        uses: cloudflare/wrangler-action@v3
+        with:
+          # Cloudflare API トークン。
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          # Cloudflare アカウント ID.
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          # 実行する wrangler コマンド。'dev' 環境を指定してデプロイする。
+          command: deploy --env dev

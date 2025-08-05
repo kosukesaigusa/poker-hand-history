@@ -1,0 +1,26 @@
+name: '[CI] Test'
+
+on:
+  # プルリクエストが作成または更新された時に実行する。
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      # リポジトリのコードをチェックアウトする。
+      - uses: actions/checkout@v4
+      
+      # Bun 環境をセットアップし、依存関係をインストールする。
+      # 作成した Composite Action を使用して、Bun のセットアップと依存関係のインストールを行う。
+      - name: Setup Bun and install dependencies
+        uses: ./.github/actions/setup-bun
+        with:
+          bun-version: 'latest'
+          cache-key-prefix: 'bun-dependencies'
+        
+      # テストを実行する。
+      # vitest を使用してテストを実行し、結果を確認する。
+      - name: Run tests
+        run: bun run test:run
