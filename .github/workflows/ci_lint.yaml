@@ -1,0 +1,26 @@
+name: '[CI] Lint'
+
+on:
+  # プルリクエストが作成または更新された時に実行する。
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      # リポジトリのコードをチェックアウトする。
+      - uses: actions/checkout@v4
+      
+      # Bun 環境をセットアップし、依存関係をインストールする。
+      # 作成した Composite Action を使用して、Bun のセットアップと依存関係のインストールを行う。
+      - name: Setup Bun and install dependencies
+        uses: ./.github/actions/setup-bun
+        with:
+          bun-version: 'latest'
+          cache-key-prefix: 'bun-dependencies'
+        
+      # リントチェックを実行する。
+      # biome を使用してコードの品質チェックを行い、問題があれば修正する。
+      - name: Run biome check
+        run: bun run check

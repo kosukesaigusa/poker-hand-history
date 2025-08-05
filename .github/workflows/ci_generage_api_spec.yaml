@@ -1,0 +1,45 @@
+name: '[CI] Generate API Specification'
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  generate-api-spec:
+    runs-on: ubuntu-latest
+    steps:
+      # リポジトリのコードをチェックアウトする。
+      - uses: actions/checkout@v4
+          
+      # Bun 環境をセットアップし、依存関係をインストールする。
+      # 作成した Composite Action を使用して、Bun のセットアップと依存関係のインストールを行う。
+      - name: Setup Bun and install dependencies
+        uses: ./.github/actions/setup-bun
+        with:
+          bun-version: 'latest'
+          cache-key-prefix: 'bun-lint-dependencies'
+        
+      # サーバーを起動し、OpenAPI 仕様を生成する。
+      - name: Start server and generate OpenAPI spec
+        run: |
+          bun run dev &
+          # サーバーの起動を待つ。
+          sleep 5
+          curl http://localhost:8787/development/spec | jq '.' > openapi.json
+          
+      # OpenAPI 仕様をリポジトリに保存する。
+      - name: Upload API spec
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-spec
+          path: openapi.json
+          
+      # OpenAPI 仕様をリポジトリに保存する。
+      - name: Commit and push if changed
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add openapi.json
+          git diff --quiet && git diff --staged --quiet || git commit -m "Update OpenAPI specification"
+          git push
