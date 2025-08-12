@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       # リポジトリのコードをチェックアウトする。
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
           
       # Bun 環境をセットアップし、依存関係をインストールする。
       # 作成した Composite Action を使用して、Bun のセットアップと依存関係のインストールを行う。
