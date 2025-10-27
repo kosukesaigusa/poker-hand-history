@@ -35,7 +35,7 @@ jobs:
           
       # OpenAPI 仕様をリポジトリに保存する。
       - name: Upload API spec
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: openapi-spec
           path: openapi.json
