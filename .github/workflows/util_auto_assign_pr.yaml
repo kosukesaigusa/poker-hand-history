@@ -15,4 +15,4 @@ jobs:
 
     steps:
       # .github/auto_assign.yml の設定に従って Reviewer と Assignee を自動的に追加する。
-      - uses: kentaro-m/auto-assign-action@v2.0.0
+      - uses: kentaro-m/auto-assign-action@v2.0.1
